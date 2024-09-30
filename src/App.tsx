@@ -1,25 +1,28 @@
 // src/App.tsx
 
 import React, { useState } from 'react';
+import axios from 'axios';
 import SearchForm from './components/SearchForm';
 import PokemonCard from './components/PokemonCard';
-import axios from 'axios';
+import './App.css';
 
 const App: React.FC = () => {
   const [pokemonData, setPokemonData] = useState<any>(null);
 
   const handleSearch = async (query: string) => {
     try {
-      // ポケモン種別を取得（日本語名で検索）
-      const speciesResponse = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/?limit=10000`);
+      // 全ポケモン種のリストを取得
+      const speciesResponse = await axios.get('https://pokeapi.co/api/v2/pokemon-species?limit=10000');
       const speciesList = speciesResponse.data.results;
 
-      // 日本語名でフィルタリング
       let pokemonEntry = null;
+      let japaneseNameEntry = null;
+
+      // 日本語名でフィルタリング
       for (const species of speciesList) {
         const speciesDetail = await axios.get(species.url);
         const names = speciesDetail.data.names;
-        const japaneseNameEntry = names.find((name: any) => name.language.name === 'ja-Hrkt');
+        japaneseNameEntry = names.find((name: any) => name.language.name === 'ja-Hrkt');
 
         // 名前が一致する場合
         if (japaneseNameEntry && japaneseNameEntry.name === query) {
@@ -27,19 +30,16 @@ const App: React.FC = () => {
           break;
         }
 
-        // タイプで検索する場合
-        const genera = speciesDetail.data.genera;
-        const japaneseGenera = genera.find((genus: any) => genus.language.name === 'ja-Hrkt');
-        if (japaneseGenera && japaneseGenera.genus.includes(query)) {
-          pokemonEntry = speciesDetail.data;
-          break;
-        }
+        // タイプで検索する場合は追加のロジックが必要です
       }
 
       if (pokemonEntry) {
         // ポケモンの詳細データを取得
         const pokemonResponse = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonEntry.id}`);
-        setPokemonData(pokemonResponse.data);
+        setPokemonData({
+          ...pokemonResponse.data,
+          japaneseName: japaneseNameEntry.name,
+        });
       } else {
         alert('ポケモンが見つかりませんでした。');
       }
@@ -50,7 +50,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="App">
       <h1>ポケモン検索アプリ</h1>
       <SearchForm onSearch={handleSearch} />
       {pokemonData && <PokemonCard pokemonData={pokemonData} />}

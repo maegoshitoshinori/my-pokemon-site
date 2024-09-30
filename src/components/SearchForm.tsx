@@ -1,6 +1,7 @@
 // src/components/SearchForm.tsx
 
 import React, { useState } from 'react';
+import './SearchForm.css';
 
 interface Props {
   onSearch: (query: string) => void;
@@ -15,10 +16,10 @@ const SearchForm: React.FC<Props> = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="search-form">
       <input
         type="text"
-        placeholder="ポケモン名またはタイプを入力"
+        placeholder="ポケモン名を入力"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />

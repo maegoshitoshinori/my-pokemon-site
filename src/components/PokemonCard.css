@@ -1,0 +1,134 @@
+/* src/components/PokemonCard.css */
+
+.pokemon-card {
+    border: 2px solid #ff6347;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 600px;
+    background-color: #fffaf0;
+  }
+  
+  .pokemon-card h2 {
+    color: #ff6347;
+  }
+  
+  .pokemon-card img {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .types,
+  .abilities,
+  .stats {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .type {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    color: #fff;
+  }
+  
+  .stats {
+    margin-top: 20px;
+  }
+  
+  .stat-item {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .stat-name {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  
+  .base-stat {
+    font-size: 0.9em;
+    color: #555;
+  }
+  
+  .stat-inputs,
+  .desired-stat {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+  }
+  
+  .stat-inputs label,
+  .desired-stat label {
+    display: flex;
+    align-items: center;
+  }
+  
+  .stat-inputs input,
+  .desired-stat input {
+    width: 60px;
+    margin-left: 5px;
+    margin-right: 10px;
+  }
+  
+  .stat-inputs button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    background-color: #ff6347;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .stat-inputs button:hover {
+    background-color: #ff4500;
+  }
+  
+  .reset-button {
+    padding: 10px 20px;
+    background-color: #888;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .reset-button:hover {
+    background-color: #666;
+  }
+  
+  .abilities li {
+    margin: 10px 0;
+    font-size: 1.1em;
+  }
+  
+  /* 各タイプの色を定義 */
+  .type.くさ { background-color: #78C850; }
+  .type.どく { background-color: #A040A0; }
+  .type.ほのお { background-color: #F08030; }
+  .type.みず { background-color: #6890F0; }
+  .type.ノーマル { background-color: #A8A878; }
+  .type.ひこう { background-color: #A890F0; }
+  .type.むし { background-color: #A8B820; }
+  .type.いわ { background-color: #B8A038; }
+  .type.でんき { background-color: #F8D030; }
+  .type.エスパー { background-color: #F85888; }
+  .type.こおり { background-color: #98D8D8; }
+  .type.ゴースト { background-color: #705898; }
+  .type.ドラゴン { background-color: #7038F8; }
+  .type.あく { background-color: #705848; }
+  .type.はがね { background-color: #B8B8D0; }
+  .type.フェアリー { background-color: #EE99AC; }
+  .type.かくとう { background-color: #C03028; }
+  .type.じめん { background-color: #E0C068; }
+  
