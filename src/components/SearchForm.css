@@ -1,5 +1,3 @@
-/* src/components/SearchForm.css */
-
 .search-form {
     margin: 20px auto;
   }
@@ -24,4 +22,3 @@
   .search-form button:hover {
     background-color: #ff4500;
   }
-  

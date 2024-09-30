@@ -6,6 +6,29 @@ interface Props {
   pokemonData: any; // pokemonDataの型を適切に設定することが推奨されます
 }
 
+// 英語から日本語へのタイプ名のマッピング
+const typeNameJPMap: { [key: string]: string } = {
+  grass: 'くさ',
+  poison: 'どく',
+  fire: 'ほのお',
+  water: 'みず',
+  normal: 'ノーマル',
+  flying: 'ひこう',
+  bug: 'むし',
+  rock: 'いわ',
+  electric: 'でんき',
+  psychic: 'エスパー',
+  ice: 'こおり',
+  ghost: 'ゴースト',
+  dragon: 'ドラゴン',
+  dark: 'あく',
+  steel: 'はがね',
+  fairy: 'フェアリー',
+  fighting: 'かくとう',
+  ground: 'じめん',
+  // 必要に応じて追加
+};
+
 const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
   const [evs, setEvs] = useState<{ [key: string]: number }>({});
   const [desiredStats, setDesiredStats] = useState<{ [key: string]: number }>({});
@@ -31,16 +54,31 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
     speed: '素早さ',
   };
 
+  // 英語から日本語への特性名のマッピング（必要に応じて追加）
+  const [abilityNameJPMap, setAbilityNameJPMap] = useState<{ [key: string]: string }>({});
+
   useEffect(() => {
     const fetchAbilitiesAndTypes = async () => {
       try {
-        // 特性を取得
-        const abilitiesList = pokemonData.abilities.map((ab: any) => ab.ability.name);
-        setAbilities(abilitiesList);
+        // 特性を取得し、日本語名をマッピング
+        const abilityPromises = pokemonData.abilities.map(async (ab: any) => {
+          const abilityResponse = await axios.get(ab.ability.url);
+          const names = abilityResponse.data.names;
+          const jpName = names.find((name: any) => name.language.name === 'ja-Hrkt')?.name;
+          return { english: ab.ability.name, japanese: jpName || ab.ability.name };
+        });
 
-        // タイプを取得
+        const abilitiesData = await Promise.all(abilityPromises);
+        const abilityMap: { [key: string]: string } = {};
+        abilitiesData.forEach((ab: any) => {
+          abilityMap[ab.english] = ab.japanese;
+        });
+        setAbilities(abilitiesData.map((ab: any) => ab.japanese));
+
+        // タイプを取得し、日本語名をマッピング
         const typesList = pokemonData.types.map((type: any) => type.type.name);
-        setTypes(typesList);
+        const typesJP = typesList.map((typeName: string) => typeNameJPMap[typeName] || typeName);
+        setTypes(typesJP);
       } catch (error) {
         console.error('特性やタイプの取得に失敗しました。', error);
       }
@@ -49,12 +87,12 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
     fetchAbilitiesAndTypes();
   }, [pokemonData]);
 
-  // 実数値を計算する関数
+  // 実数値を計算する関数（レベル50）
   const calculateStat = (base: number, ev: number, iv: number, level: number = 50, isHP: boolean = false) => {
     if (isHP) {
-      return Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
+      return Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
     } else {
-      return Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + 5;
+      return Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + 5;
     }
   };
 
@@ -67,9 +105,13 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
       ...evs,
       [statName]: newValue,
     };
-    setEvs(newEvs);
     const totalEVs = Object.values(newEvs).reduce((sum, val) => sum + val, 0);
-    setRemainingEVs(510 - totalEVs); // 残りの努力値を計算
+    if (totalEVs > 510) {
+      alert('努力値の総合計は510を超えることはできません。');
+      return;
+    }
+    setEvs(newEvs);
+    setRemainingEVs(510 - totalEVs);
   };
 
   const handleIvChange = (statName: string, value: number) => {
@@ -96,6 +138,35 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
     setRemainingEVs(510); // 努力値をリセット
   };
 
+  // 各ステータスのEVを最大に振るハンドラー
+  const maximizeEV = (statName: string) => {
+    if (remainingEVs <= 0) {
+      alert('これ以上努力値を振ることはできません。');
+      return;
+    }
+    const currentEv = evs[statName] || 0;
+    const available = 252 - currentEv;
+    const toAdd = Math.min(available, remainingEVs);
+    const newEvs = {
+      ...evs,
+      [statName]: currentEv + toAdd,
+    };
+    setEvs(newEvs);
+    setRemainingEVs(remainingEVs - toAdd);
+  };
+
+  // 各ステータスのEVをリセットするハンドラー
+  const resetEV = (statName: string) => {
+    const currentEv = evs[statName] || 0;
+    if (currentEv === 0) return;
+    const newEvs = {
+      ...evs,
+      [statName]: 0,
+    };
+    setEvs(newEvs);
+    setRemainingEVs(remainingEVs + currentEv);
+  };
+
   const calculateEVForDesiredStat = (base: number, desiredStat: number, iv: number, level: number = 50, isHP: boolean = false) => {
     let ev = 0;
     let currentStat = calculateStat(base, ev, iv, level, isHP);
@@ -114,18 +185,22 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
       {/* タイプ表示 */}
       <h3>タイプ</h3>
       <ul className="types">
-        {types.map((typeName, index) => (
-          <li key={index} className={`type ${typeName}`}>
-            {typeName}
-          </li>
-        ))}
+        {types.map((typeNameJP, index) => {
+          // 元の英語のタイプ名を取得（CSSクラス用）
+          const englishType = Object.keys(typeNameJPMap).find(key => typeNameJPMap[key] === typeNameJP) || typeNameJP;
+          return (
+            <li key={index} className={`type ${englishType}`}>
+              {typeNameJP}
+            </li>
+          );
+        })}
       </ul>
 
       {/* 特性表示 */}
       <h3>特性</h3>
       <ul className="abilities">
-        {abilities.map((abilityName, index) => (
-          <li key={index}>{abilityName}</li>
+        {abilities.map((abilityNameJP, index) => (
+          <li key={index}>{abilityNameJP}</li>
         ))}
       </ul>
 
@@ -178,9 +253,11 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
                     onChange={(e) => handleIvChange(statName, Number(e.target.value))}
                   />
                 </label>
-                <span>
+                <span className="actual-stat">
                   実数値: {actualStat}
                 </span>
+                <button className="max-ev-button" onClick={() => maximizeEV(statName)}>努力値をマックス振る</button>
+                <button className="reset-ev-button" onClick={() => resetEV(statName)}>リセット</button>
               </div>
               <div className="desired-stat">
                 <label>
@@ -193,7 +270,7 @@ const PokemonCard: React.FC<Props> = ({ pokemonData }) => {
                     onChange={(e) => handleDesiredStatChange(statName, Number(e.target.value))}
                   />
                 </label>
-                <span>
+                <span className="required-ev">
                   必要努力値: {requiredEV}
                 </span>
               </div>
