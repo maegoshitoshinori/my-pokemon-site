@@ -1,3 +1,4 @@
+//src/components/PokemonCard.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './PokemonCard.css';
