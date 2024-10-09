@@ -8,6 +8,10 @@ const App: React.FC = () => {
   const [pokemonData, setPokemonData] = useState<any>(null);
 
   const handleSearch = async (query: string) => {
+    if (query === '') {  // クエリが空かどうかをチェック　　入力なしの場合を考慮
+      alert('ポケモン名を入力してください。');
+      return;
+    }
     try {
       // 全ポケモン種のリストを取得
       const speciesResponse = await axios.get('https://pokeapi.co/api/v2/pokemon-species?limit=10000');
@@ -28,7 +32,6 @@ const App: React.FC = () => {
           break;
         }
 
-        // タイプで検索する場合は追加のロジックが必要です
       }
 
       if (pokemonEntry) {
