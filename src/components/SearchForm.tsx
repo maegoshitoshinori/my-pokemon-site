@@ -22,7 +22,7 @@ const SearchForm: React.FC<Props> = ({ onSearch }) => {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <button type="submit">検索</button>
+      <button type="submit" disabled={query.trim() === ''}>検索</button>
     </form>
   );
 };
